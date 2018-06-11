@@ -50,14 +50,14 @@ class Printer extends Actor with ActorLogging {
   import Printer._
   implicit val ec: ExecutionContext = context.dispatcher
   implicit val system = ActorSystem()
-  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds, Some(new DynamicRange(1, 1500, 0)))
+  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds/*, Some(new DynamicRange(1, 1500, 0))*/)
   private val gauge = Kamon.gauge("Greeting_Interval_gauge2")
 
   def receive = {
     case Greeting(greeting) =>
       val start = System.currentTimeMillis()
       //      val startedTimer = Kamon.timer("Greeting_Interval").start()
-      val interval = 900 + Random.nextInt(8) * 100
+      val interval = 500 + Random.nextInt(8) * 100
       log.info("interval {}", interval)
       Thread.sleep(interval)
       //      log.info("Greeting received (from " + sender() + "): " + greeting)
