@@ -50,7 +50,7 @@ class Printer extends Actor with ActorLogging {
   import Printer._
   implicit val ec: ExecutionContext = context.dispatcher
   implicit val system = ActorSystem()
-  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds/*, Some(new DynamicRange(1, 1500, 0))*/)
+  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds /*, Some(new DynamicRange(1, 1500, 0))*/)
   private val gauge = Kamon.gauge("Greeting_Interval_gauge2")
 
   def receive = {
@@ -104,15 +104,10 @@ object AkkaMonitoring extends App {
 
   Kamon.addReporter(new PrometheusReporter())
   //  for (i <- 1 to 60) {
-  randomGreeter ! Greet
-  Thread.sleep(600)
-  randomGreeter ! Greet
-  Thread.sleep(600)
-  randomGreeter ! Greet
-  Thread.sleep(600)
-  randomGreeter ! Greet
-  Thread.sleep(600)
-  randomGreeter ! Greet
+  while (true) {
+    randomGreeter ! Greet
+    Thread.sleep(600)
+  }
   //  }                     // only general stat info
 }
 //#main-class
