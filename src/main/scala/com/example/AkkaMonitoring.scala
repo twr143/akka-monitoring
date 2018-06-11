@@ -5,7 +5,6 @@ import akka.pattern.Patterns.after
 import kamon.Kamon
 import kamon.metric.{DynamicRange, MeasurementUnit}
 import kamon.prometheus.PrometheusReporter
-import kamon.zipkin.ZipkinReporter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Random
@@ -51,20 +50,22 @@ class Printer extends Actor with ActorLogging {
   import Printer._
   implicit val ec: ExecutionContext = context.dispatcher
   implicit val system = ActorSystem()
-  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds, Some(new DynamicRange(1, 1500, 4)))
+  private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds, Some(new DynamicRange(1, 1500, 0)))
   private val gauge = Kamon.gauge("Greeting_Interval_gauge2")
 
   def receive = {
     case Greeting(greeting) =>
       val start = System.currentTimeMillis()
       //      val startedTimer = Kamon.timer("Greeting_Interval").start()
-      Thread.sleep(900 + Random.nextInt(5) * 100)
+      val interval = 900 + Random.nextInt(8) * 100
+      log.info("interval {}", interval)
+      Thread.sleep(interval)
       //      log.info("Greeting received (from " + sender() + "): " + greeting)
       //      startedTimer.stop()
       val end = System.currentTimeMillis()
       //      histo.record(end - start, 1)
       val tmp = end - start
-      histo.record(tmp )   //реальный массив не хранится в гистограмме, только стат  распрделение, сколько точек в какой отсек попало
+      histo.record(tmp) //реальный массив не хранится в гистограмме, только стат  распрделение, сколько точек в какой отсек попало
   }
 }
 //#printer-actor
@@ -102,11 +103,17 @@ object AkkaMonitoring extends App {
   def randomGreeter = helloGreeter
 
   Kamon.addReporter(new PrometheusReporter())
-  Kamon.addReporter(new ZipkinReporter())
-  for (i <- 1 to 60) {
-    randomGreeter ! Greet
-    Thread.sleep(600)
-  }                     // only general stat info
+  //  for (i <- 1 to 60) {
+  randomGreeter ! Greet
+  Thread.sleep(600)
+  randomGreeter ! Greet
+  Thread.sleep(600)
+  randomGreeter ! Greet
+  Thread.sleep(600)
+  randomGreeter ! Greet
+  Thread.sleep(600)
+  randomGreeter ! Greet
+  //  }                     // only general stat info
 }
 //#main-class
 //#full-example
