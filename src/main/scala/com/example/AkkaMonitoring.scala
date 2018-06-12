@@ -76,6 +76,8 @@ class Printer extends Actor with ActorLogging {
     //  (akka_actor_processing_time_seconds_sum -(akka_actor_processing_time_seconds_sum offset 1m))/(akka_actor_processing_time_seconds_count- (akka_actor_processing_time_seconds_count offset 1m))
     //   projection
     // (akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} -(akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"}- (akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"} offset 1m))
+    //  mail box size for the last minute
+    //  (akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} -(akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"}- (akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"} offset 1m))
   }
 }
 //#printer-actor
