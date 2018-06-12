@@ -1,14 +1,12 @@
 //#full-example
 package com.example
 import java.util.UUID
-
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.Patterns.after
 import kamon.Kamon
 import kamon.metric.{DynamicRange, MeasurementUnit}
 import kamon.prometheus.PrometheusReporter
 import kamon.zipkin.ZipkinReporter
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Random
@@ -76,6 +74,8 @@ class Printer extends Actor with ActorLogging {
     //
     // (Greeting_Interval_hist2_seconds_sum - (Greeting_Interval_hist2_seconds_sum offset 1m))/(Greeting_Interval_hist2_seconds_count - (Greeting_Interval_hist2_seconds_count offset 1m))
     //  (akka_actor_processing_time_seconds_sum -(akka_actor_processing_time_seconds_sum offset 1m))/(akka_actor_processing_time_seconds_count- (akka_actor_processing_time_seconds_count offset 1m))
+    //   projection
+    // (akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} -(akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"}- (akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"} offset 1m))
   }
 }
 //#printer-actor
