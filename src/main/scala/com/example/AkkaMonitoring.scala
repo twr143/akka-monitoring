@@ -1,10 +1,14 @@
 //#full-example
 package com.example
+import java.util.UUID
+
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.Patterns.after
 import kamon.Kamon
 import kamon.metric.{DynamicRange, MeasurementUnit}
 import kamon.prometheus.PrometheusReporter
+import kamon.zipkin.ZipkinReporter
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Random
@@ -56,16 +60,22 @@ class Printer extends Actor with ActorLogging {
   def receive = {
     case Greeting(greeting) =>
       val start = System.currentTimeMillis()
+      val span = Kamon.buildSpan(s"printer-span-${UUID.randomUUID()}").start()
       //      val startedTimer = Kamon.timer("Greeting_Interval").start()
       val interval = 500 + Random.nextInt(8) * 100
       log.info("interval {}", interval)
       Thread.sleep(interval)
       //      log.info("Greeting received (from " + sender() + "): " + greeting)
       //      startedTimer.stop()
+      span.finish()
       val end = System.currentTimeMillis()
       //      histo.record(end - start, 1)
       val tmp = end - start
       histo.record(tmp) //реальный массив не хранится в гистограмме, только стат  распрделение, сколько точек в какой отсек попало
+    //    prometheus queries:
+    //
+    // (Greeting_Interval_hist2_seconds_sum - (Greeting_Interval_hist2_seconds_sum offset 1m))/(Greeting_Interval_hist2_seconds_count - (Greeting_Interval_hist2_seconds_count offset 1m))
+    //  (akka_actor_processing_time_seconds_sum -(akka_actor_processing_time_seconds_sum offset 1m))/(akka_actor_processing_time_seconds_count- (akka_actor_processing_time_seconds_count offset 1m))
   }
 }
 //#printer-actor
@@ -103,7 +113,9 @@ object AkkaMonitoring extends App {
   def randomGreeter = helloGreeter
 
   Kamon.addReporter(new PrometheusReporter())
+  Kamon.addReporter(new ZipkinReporter())
   //  for (i <- 1 to 60) {
+  println(s"service ${Kamon.environment.service}")
   while (true) {
     randomGreeter ! Greet
     Thread.sleep(600)

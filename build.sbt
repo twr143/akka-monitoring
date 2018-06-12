@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   "io.kamon" %% "kamon-core" % "1.1.0",
   "io.kamon" %% "kamon-logback" % "1.0.0",
   "io.kamon" %% "kamon-akka-2.5" % "1.0.1",
-  "io.kamon" %% "kamon-prometheus" % "1.0.0"
+  "io.kamon" %% "kamon-prometheus" % "1.0.0",
+  "io.kamon" %% "kamon-zipkin" % "1.0.0"
 )
 libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.5.12"
