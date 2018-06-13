@@ -17,7 +17,7 @@ object Greeter {
   def props(message: String, printerActor: ActorRef): Props = Props(new Greeter(message, printerActor))
   //#greeter-messages
   final case class WhoToGreet(who: String)
-  case object Greet
+  case class Greet(system: ActorSystem)
 }
 //#greeter-messages
 //#greeter-companion
@@ -30,9 +30,9 @@ class Greeter(message: String, printerActor: ActorRef) extends Actor {
   def receive = {
     case WhoToGreet(who) =>
       greeting = message + ", " + who
-    case Greet =>
+    case Greet(system) =>
       //#greeter-send-message
-      printerActor ! Greeting(greeting)
+      printerActor ! Greeting(greeting, system)
     //#greeter-send-message
   }
 }
@@ -43,7 +43,7 @@ object Printer {
   //#printer-messages
   def props: Props = Props[Printer]
   //#printer-messages
-  final case class Greeting(greeting: String)
+  final case class Greeting(greeting: String, system: ActorSystem)
 }
 //#printer-messages
 //#printer-companion
@@ -51,12 +51,11 @@ object Printer {
 class Printer extends Actor with ActorLogging {
   import Printer._
   implicit val ec: ExecutionContext = context.dispatcher
-  implicit val system = ActorSystem()
   private val histo = Kamon.histogram("Greeting_Interval_hist2", MeasurementUnit.time.milliseconds /*, Some(new DynamicRange(1, 1500, 0))*/)
   private val gauge = Kamon.gauge("Greeting_Interval_gauge2")
 
   def receive = {
-    case Greeting(greeting) =>
+    case Greeting(greeting, system) =>
       val start = System.currentTimeMillis()
       val span = Kamon.buildSpan(s"printer-span-${UUID.randomUUID()}").start()
       //      val startedTimer = Kamon.timer("Greeting_Interval").start()
@@ -70,14 +69,25 @@ class Printer extends Actor with ActorLogging {
       //      histo.record(end - start, 1)
       val tmp = end - start
       histo.record(tmp) //реальный массив не хранится в гистограмме, только стат  распрделение, сколько точек в какой отсек попало
-    //    prometheus queries:
-    //
-    // (Greeting_Interval_hist2_seconds_sum - (Greeting_Interval_hist2_seconds_sum offset 1m))/(Greeting_Interval_hist2_seconds_count - (Greeting_Interval_hist2_seconds_count offset 1m))
-    //  (akka_actor_processing_time_seconds_sum -(akka_actor_processing_time_seconds_sum offset 1m))/(akka_actor_processing_time_seconds_count- (akka_actor_processing_time_seconds_count offset 1m))
-    //   projection
-    // (akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} -(akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"}- (akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"} offset 1m))
-    //  mail box size for the last minute
-    //  (akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} -(akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"}- (akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"} offset 1m))
+      //    prometheus queries:
+      //
+      // (Greeting_Interval_hist2_seconds_sum - (Greeting_Interval_hist2_seconds_sum offset 1m))/(Greeting_Interval_hist2_seconds_count - (Greeting_Interval_hist2_seconds_count offset 1m))
+      //  (akka_actor_processing_time_seconds_sum -(akka_actor_processing_time_seconds_sum offset 1m))/(akka_actor_processing_time_seconds_count- (akka_actor_processing_time_seconds_count offset 1m))
+      //   projection
+      // (akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} -(akka_actor_processing_time_seconds_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"}- (akka_actor_processing_time_seconds_count{path="helloAkka/user/printerActor"} offset 1m))
+      //  mail box size for the last minute
+      //  (akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} -(akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"}- (akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"} offset 1m))
+      // executor threads
+      //      (executor_threads_sum - executor_threads_sum offset 1m)/(executor_threads_count - executor_threads_count offset 1m)
+      Future {
+        Thread.sleep(900)
+      }
+      Future {
+        Thread.sleep(900)
+      }
+      Future {
+        Thread.sleep(900)
+      }
   }
 }
 //#printer-actor
@@ -119,7 +129,7 @@ object AkkaMonitoring extends App {
   //  for (i <- 1 to 60) {
   println(s"service ${Kamon.environment.service}")
   while (true) {
-    randomGreeter ! Greet
+    randomGreeter ! Greet(system)
     Thread.sleep(600)
   }
   //  }                     // only general stat info
