@@ -34,7 +34,7 @@ class AkkaMonitoringSpec(_system: ActorSystem)
       val greetPerson = "Akka"
       helloGreeter ! WhoToGreet(greetPerson)
       helloGreeter ! Greet
-      testProbe.expectMsg(500 millis, Greeting(helloGreetingMessage + ", " + greetPerson))
+      testProbe.expectMsg(500 millis, Greeting(helloGreetingMessage + ", " + greetPerson,system = system))
     }
   }
   //#first-test
