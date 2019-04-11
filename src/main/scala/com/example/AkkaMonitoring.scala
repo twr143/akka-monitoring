@@ -79,6 +79,7 @@ class Printer extends Actor with ActorLogging {
       //  (akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} -(akka_actor_mailbox_size_sum{path="helloAkka/user/printerActor"} offset 1m))/(akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"}- (akka_actor_mailbox_size_count{path="helloAkka/user/printerActor"} offset 1m))
       // executor threads
       //      (executor_threads_sum - executor_threads_sum offset 1m)/(executor_threads_count - executor_threads_count offset 1m)
+      // фильтровать можно по атрибутам из попапа на графике прометеуса
       Future {
         Thread.sleep(900)
       }
@@ -106,20 +107,7 @@ object AkkaMonitoring extends App {
     system.actorOf(Greeter.props("Hello", printer), "helloGreeter")
   val goodDayGreeter: ActorRef =
     system.actorOf(Greeter.props("Good day", printer), "goodDayGreeter")
-  //#create-actors
-  //#main-send-messages
-  //  howdyGreeter ! WhoToGreet("Akka")
-  //  howdyGreeter ! Greet
-  //
-  //  howdyGreeter ! WhoToGreet("Lightbend")
-  //  howdyGreeter ! Greet
-  //
-  //  helloGreeter ! WhoToGreet("Scala")
-  //  helloGreeter ! Greet
-  //
-  //  goodDayGreeter ! WhoToGreet("Play")
-  //  goodDayGreeter ! Greet
-  //#main-send-messages
+
   val allGreeters = Vector(howdyGreeter, helloGreeter, goodDayGreeter)
 
   def randomGreeter = helloGreeter
@@ -132,7 +120,4 @@ object AkkaMonitoring extends App {
     randomGreeter ! Greet(system)
     Thread.sleep(600)
   }
-  //  }                     // only general stat info
 }
-//#main-class
-//#full-example
